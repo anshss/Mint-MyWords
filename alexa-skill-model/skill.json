@@ -1,0 +1,53 @@
+{
+  "manifest": {
+    "publishingInformation": {
+      "locales": {
+        "en-IN": {
+          "examplePhrases": [
+            "Alexa open Appointment Scheduler",
+            "Alexa launch Appointment Scheduler",
+            "Alexa start Appointment Scheduler"
+          ],
+          "name": "Mint my voice",
+          "smallIconUri": "file://assets/images/en-IN_smallIconUri.png",
+          "largeIconUri": "file://assets/images/en-IN_largeIconUri.png"
+        }
+      }
+    },
+    "apis": {
+      "custom": {
+        "endpoint": {
+          "uri": "arn:aws:lambda:us-east-1:027780630812:function:215f3b45-eef2-4e56-bc54-9b0069caed7f:Release_0"
+        },
+        "interfaces": [],
+        "locales": {},
+        "regions": {
+          "EU": {
+            "endpoint": {
+              "uri": "arn:aws:lambda:eu-west-1:027780630812:function:215f3b45-eef2-4e56-bc54-9b0069caed7f:Release_0"
+            }
+          },
+          "NA": {
+            "endpoint": {
+              "uri": "arn:aws:lambda:us-east-1:027780630812:function:215f3b45-eef2-4e56-bc54-9b0069caed7f:Release_0"
+            }
+          },
+          "FE": {
+            "endpoint": {
+              "uri": "arn:aws:lambda:us-west-2:027780630812:function:215f3b45-eef2-4e56-bc54-9b0069caed7f:Release_0"
+            }
+          }
+        }
+      }
+    },
+    "manifestVersion": "1.0",
+    "permissions": [
+      {
+        "name": "alexa::profile:name:read"
+      },
+      {
+        "name": "alexa::profile:email:read"
+      }
+    ]
+  }
+}

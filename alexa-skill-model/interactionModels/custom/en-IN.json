@@ -1,0 +1,315 @@
+{
+  "interactionModel": {
+    "dialog": {
+      "intents": [
+        {
+          "slots": [
+            {
+              "name": "appointmentDate",
+              "elicitationRequired": true,
+              "validations": [
+                {
+                  "start": "P1D",
+                  "end": "",
+                  "type": "isInDuration",
+                  "prompt": "Slot.Validation.362475628407.1157681478773.1557208284837"
+                }
+              ],
+              "type": "AMAZON.DATE",
+              "confirmationRequired": false,
+              "prompts": {
+                "elicitation": "Elicit.Slot.153503252364.817553974409"
+              }
+            },
+            {
+              "name": "appointmentTime",
+              "elicitationRequired": true,
+              "type": "AMAZON.TIME",
+              "confirmationRequired": false,
+              "prompts": {
+                "elicitation": "Elicit.Slot.153503252364.190769526364"
+              }
+            }
+          ],
+          "name": "ScheduleAppointmentIntent",
+          "delegationStrategy": "SKILL_RESPONSE",
+          "confirmationRequired": true,
+          "prompts": {
+            "confirmation": "Confirm.Intent.153503252364"
+          }
+        },
+        {
+          "slots": [
+            {
+              "name": "appointmentDate",
+              "elicitationRequired": true,
+              "type": "AMAZON.DATE",
+              "confirmationRequired": false,
+              "prompts": {
+                "elicitation": "Elicit.Slot.1202202710374.620761290647"
+              }
+            },
+            {
+              "name": "appointmentTime",
+              "elicitationRequired": true,
+              "type": "AMAZON.TIME",
+              "confirmationRequired": false,
+              "prompts": {
+                "elicitation": "Elicit.Slot.1202202710374.903650749689"
+              }
+            }
+          ],
+          "name": "CheckAvailabilityIntent",
+          "confirmationRequired": false,
+          "prompts": {}
+        },
+        {
+          "slots": [
+            {
+              "name": "mintText",
+              "elicitationRequired": true,
+              "type": "AMAZON.SearchQuery",
+              "confirmationRequired": false,
+              "prompts": {
+                "elicitation": "Elicit.Slot.722446756808.35212744112"
+              }
+            }
+          ],
+          "name": "CaptureMintText",
+          "delegationStrategy": "SKILL_RESPONSE",
+          "confirmationRequired": true,
+          "prompts": {
+            "confirmation": "Confirm.Intent.1651202650187"
+          }
+        }
+      ],
+      "delegationStrategy": "ALWAYS"
+    },
+    "languageModel": {
+      "intents": [
+        {
+          "name": "AMAZON.NavigateHomeIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.FallbackIntent",
+          "samples": []
+        },
+        {
+          "slots": [
+            {
+              "name": "appointmentDate",
+              "type": "AMAZON.DATE",
+              "samples": [
+                "on {appointmentDate}",
+                "I\u0027d like to meet on {appointmentDate}",
+                "how about {appointmentDate}",
+                "{appointmentDate}"
+              ]
+            },
+            {
+              "name": "appointmentTime",
+              "type": "AMAZON.TIME",
+              "samples": [
+                "how about {appointmentTime}",
+                "at {appointmentTime}",
+                "{appointmentTime}"
+              ]
+            }
+          ],
+          "name": "ScheduleAppointmentIntent",
+          "samples": [
+            "make an appointment on {appointmentDate} at {appointmentTime}",
+            "schedule an appointment on {appointmentDate} at {appointmentTime}",
+            "schedule an appointment at {appointmentTime} on {appointmentDate}",
+            "{appointmentTime} on {appointmentDate}",
+            "{appointmentDate} at {appointmentTime}",
+            "make an appointment for {appointmentDate} at {appointmentTime}",
+            "make an appointment for {appointmentDate}",
+            "make an appointment",
+            "set an appointment",
+            "setup an appointment",
+            "setup a meeting",
+            "set up a call",
+            "schedule a call",
+            "schedule a meeting",
+            "schedule an appointment"
+          ]
+        },
+        {
+          "name": "AMAZON.YesIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NoIntent",
+          "samples": []
+        },
+        {
+          "slots": [
+            {
+              "name": "appointmentDate",
+              "type": "AMAZON.DATE",
+              "samples": [
+                "on {appointmentDate}",
+                "check {appointmentDate}",
+                "try {appointmentDate}",
+                "{appointmentDate}"
+              ]
+            },
+            {
+              "name": "appointmentTime",
+              "type": "AMAZON.TIME",
+              "samples": [
+                "check {appointmentTime}",
+                "how about {appointmentTime}",
+                "try {appointmentTime}",
+                "{appointmentTime}"
+              ]
+            }
+          ],
+          "name": "CheckAvailabilityIntent",
+          "samples": [
+            "check availability"
+          ]
+        },
+        {
+          "slots": [
+            {
+              "name": "mintText",
+              "type": "AMAZON.SearchQuery",
+              "samples": [
+                "mint {mintText}",
+                "{mintText}"
+              ]
+            }
+          ],
+          "name": "CaptureMintText",
+          "samples": [
+            "mint for {mintText}",
+            "mint my words {mintText} ",
+            "Sure {mintText}",
+            "mint {mintText}"
+          ]
+        }
+      ],
+      "types": [],
+      "invocationName": "mint my words"
+    },
+    "prompts": [
+      {
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "What day or date would you like to meet?"
+          }
+        ],
+        "id": "Elicit.Slot.153503252364.817553974409"
+      },
+      {
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "What time works best?"
+          },
+          {
+            "type": "PlainText",
+            "value": "What time would you like to meet?"
+          }
+        ],
+        "id": "Elicit.Slot.153503252364.190769526364"
+      },
+      {
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "Please tell me your full name."
+          },
+          {
+            "type": "PlainText",
+            "value": "What is your full name?"
+          }
+        ],
+        "id": "Elicit.Slot.153503252364.1550516431899"
+      },
+      {
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "What is your telephone number?"
+          }
+        ],
+        "id": "Elicit.Slot.153503252364.16028220185"
+      },
+      {
+        "variations": [
+          {
+            "type": "SSML",
+            "value": "\u003cspeak\u003eI have your meeting request on {appointmentDate} at {appointmentTime}. Is that correct?\u003c/speak\u003e"
+          }
+        ],
+        "id": "Confirm.Intent.153503252364"
+      },
+      {
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "The date must be tomorrow or later. What date would you like to meet?"
+          },
+          {
+            "type": "PlainText",
+            "value": "The appointment date must be at least one day from now. What day would you like to meet?"
+          }
+        ],
+        "id": "Slot.Validation.362475628407.1157681478773.1557208284837"
+      },
+      {
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "What date would you like to check?"
+          }
+        ],
+        "id": "Elicit.Slot.1202202710374.620761290647"
+      },
+      {
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "What time would you like to check?"
+          }
+        ],
+        "id": "Elicit.Slot.1202202710374.903650749689"
+      },
+      {
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "Which words do you wanna mint?"
+          }
+        ],
+        "id": "Elicit.Slot.722446756808.35212744112"
+      },
+      {
+        "variations": [
+          {
+            "type": "SSML",
+            "value": "\u003cspeak\u003eI am goint to mind your words- {mintText} . Is that correct?\u003c/speak\u003e"
+          }
+        ],
+        "id": "Confirm.Intent.1651202650187"
+      }
+    ]
+  }
+}
