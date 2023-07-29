@@ -41,10 +41,10 @@ async function runMintSimulator() {
     console.timeEnd("Simulator");
 }
 
-async function runClaimSimulator() {
+async function runClaimNftSimulator() {
     const nftAddress = "3VXaCkTyuqqeUU9bSE2HytcVkE7xqh3RoAm3AaiiUuFh";
     const receiverAddress = "BTBPKRJQv7mn2kxBBJUpzh3wKN567ZLdXDWcxXFQ4KaV";
-    claimSimulator(nftAddress, receiverAddress);
+    claimNftSimulator(nftAddress, receiverAddress);
 }
 
 async function mintSimulator(name, emailId, prompt) {
@@ -58,10 +58,10 @@ async function mintSimulator(name, emailId, prompt) {
     await sendMail(emailId, imageUrl, txId, name);
 }
 
-async function claimSimulator(nftAddress, receiverAddress) {
-    const imgUrl = await fetchImage(nftAddress);
+async function claimNftSimulator(nftAddress, receiverAddress) {
+    const imgUrl = await fetchNftImage(nftAddress);
     console.log(imgUrl);
-    const txId = await claim(receiverAddress, nftAddress);
+    const txId = await claimNft(receiverAddress, nftAddress);
     console.log(`Transferred NFT: ${nftAddress} in tx: ${txId}`);
 }
 
@@ -94,7 +94,7 @@ async function nftMint(uri) {
     }
 }
 
-async function fetchImage(nftAddress) {
+async function fetchNftImage(nftAddress) {
     try {
         const metadata = await solanaSDK.nft.getNFTMetadataURI(
             Currency.SOL,
@@ -108,7 +108,7 @@ async function fetchImage(nftAddress) {
     }
 }
 
-async function claim(receiverAddress, nftAddress) {
+async function claimNft(receiverAddress, nftAddress) {
     try {
         const { txId } =
             await solanaSDK.nft.send.transferSignedTransaction({
