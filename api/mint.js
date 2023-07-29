@@ -195,3 +195,6 @@ async function createImage(name, emailId, prompt) {
     console.log(e);
   }
 }
+
+async function setTableData(emailId, tokenId) {}
+async function fetchUserNfts(address) {}
