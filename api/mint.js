@@ -1,200 +1,237 @@
-import fetch from "node-fetch";
+import { TatumSolanaSDK } from "@tatumio/solana";
 import { Currency } from "@tatumio/api-client";
-import { TatumFlowSDK } from "@tatumio/flow";
+import { sleepSeconds } from "@tatumio/shared-abstract-sdk";
 import Moralis from "moralis";
-import dotenv from "dotenv";
 import SibApiV3Sdk from "sib-api-v3-sdk";
+import dotenv from "dotenv";
 dotenv.config();
 
-// runSimulator();
-
-// async function runSimulator() {
-//     const name = "Sarthak Vaish";
-//     const emailId = `sarthakvaish184@gmail.com`;
-//     const prompt = `HI, This is a first NFT I minted. How is it?`;
-//     console.time("Simulator")
-//     await mintSimulator(name, emailId, prompt);
-//     console.timeEnd("Simulator")
-// }
-
+const SLEEP_SECONDS = 5;
 const TatumApi = process.env["TATUM_API"];
-
-const flowSDK = TatumFlowSDK({
-  apiKey: TatumApi,
-  testnet: true,
+const solanaSDK = TatumSolanaSDK({
+    apiKey: TatumApi,
 });
+const senderAddress = process.env["MINTER_ADDRESS"];
+const senderPrivateKey = process.env["MINTER_PRIVATE_KEY"];
 
-const MoralisApi = process.env["MORALIS_API"];
+runMintSimulator();
 
-Moralis.start({
-  apiKey: MoralisApi,
-});
+async function runMintSimulator() {
+    const name = "Sarthak Vaish";
+    const emailId = `sarthakvaish184@gmail.com`;
+    const prompt = `HI, This is a first NFT I minted. How is it?`;
+    console.time("Simulator");
+    await mintSimulator(name, emailId, prompt);
+    console.timeEnd("Simulator");
+}
 
-export async function mintSimulator(name, emailId, prompt) {
-  try {
+async function runClaimSimulator() {
+    const nftAddress = "3VXaCkTyuqqeUU9bSE2HytcVkE7xqh3RoAm3AaiiUuFh";
+    const receiverAddress = "BTBPKRJQv7mn2kxBBJUpzh3wKN567ZLdXDWcxXFQ4KaV"
+    claimSimulator(nftAddress, receiverAddress)
+}
+
+async function mintSimulator(name, emailId, prompt) {
     const imageUrl = await createImage(name, emailId, prompt);
     console.log(imageUrl);
     const uri = await formURI(imageUrl);
     console.log(uri);
-    const txHash = await nftMint(uri);
-    console.log(txHash);
-    await sendMail(emailId, imageUrl, txHash, name);
-  } catch (e) {
-    console.log(e);
-  }
+    const { nftAddress, txId } = await nftMint(uri);
+    // add table email, nftAddress
+    console.log(txId);
+    await sendMail(emailId, imageUrl, txId, name);
 }
 
-async function sendMail(emailId, imageUrl, txHash, name) {
-  try {
-    let txUrl = `https://testnet.flowscan.org/transaction/${txHash}`;
+async function claimSimulator(nftAddress, receiverAddress) {
+    const imgUrl = await fetchImage(nftAddress);
+    await claim(receiverAddress, nftAddress);
+}
 
-    SibApiV3Sdk.ApiClient.instance.authentications["api-key"].apiKey =
-      process.env["BREVO_API_KEY"];
-
-    new SibApiV3Sdk.TransactionalEmailsApi()
-      .sendTransacEmail({
-        sender: { email: "glenxbuilders@gmail.com", name: "Sarthak Vaish" },
-        to: [{ email: emailId, name: name }],
-        params: { nft_link: imageUrl, name: "Sarthak Singhal", txUrl: txUrl },
-        attachment: [{ url: imageUrl, name: "nft.png" }],
-        templateId: 3,
-      })
-      .then(
-        function(data) {
-          console.log(data);
-        },
-        function(error) {
-          console.error(error);
+async function nftMint(uri) {
+    const { txId, nftAddress } = await solanaSDK.nft.send.mintSignedTransaction(
+        {
+            to: senderAddress,
+            from: senderAddress,
+            fromPrivateKey: senderPrivateKey,
+            metadata: {
+                name: "Prompt_NFT",
+                symbol: "PN",
+                sellerFeeBasisPoints: 0,
+                uri: uri,
+                creators: [
+                    {
+                        address: senderAddress,
+                        share: 100, // means that creator owns 100% of NFT
+                        verified: true, // means that this creator is signed transaction
+                    },
+                ],
+            },
         }
-      );
-  } catch (e) {
-    console.log(e);
-  }
+    );
+    console.log(`Minted NFT: ${nftAddress} in tx: ${txId}`);
+    await sleepSeconds(SLEEP_SECONDS);
+    return nftAddress, txId;
 }
 
-async function nftMint(metadata) {
-  const contractAddress = process.env["TATUM_CONTRACT_ADDRESS"];
-  const account = process.env["TATUM_ACCOUNT"];
-  const privateKey = process.env["TATUM_PRIVATE_KEY"];
+async function fetchImage(nftAddress) {
+    const metadata = await solanaSDK.nft.getNFTMetadataURI(
+        Currency.SOL,
+        nftAddress
+    );
 
-  const nftMinted = await flowSDK.nft.send.mintSignedTransaction({
-    chain: Currency.FLOW,
-    contractAddress,
-    account,
-    to: account,
-    privateKey,
-    url: metadata,
-  });
-
-  console.log(
-    `Minted nft with transaction ID: ${nftMinted.txId} and token ID: ${nftMinted.tokenId}`
-  );
-
-  return nftMinted.txId;
+    const url = `${JSON.stringify(metadata)}`;
+    console.log(url);
+    return url;
 }
 
-async function formURI(url) {
-  try {
-
-    const uploadArray = [
-      {
-        path: "prompts.json",
-        content: {
-          image: url,
-        },
-      },
-    ];
-
-    const response = await Moralis.EvmApi.ipfs.uploadFolder({
-      abi: uploadArray,
-    });
-
-    const uri = response.result[0].path;
-    // console.log(uri);
-
-    return uri;
-  } catch (e) {
-    console.log(e);
-  }
+async function claim(receiverAddress, nftAddress) {
+    try {
+        const { txId: transferTx } =
+            await solanaSDK.nft.send.transferSignedTransaction({
+                to: receiverAddress,
+                from: senderAddress,
+                fromPrivateKey: senderPrivateKey,
+                contractAddress: nftAddress,
+            });
+        console.log(`Transferred NFT: ${nftAddress} in tx: ${transferTx}`);
+    } catch (error) {
+        console.log(error);
+    }
 }
 
 async function createImage(name, emailId, prompt) {
-  try {
-    const BannerBearApi = process.env["BANNERBEAR_API"];
-    const templateId = process.env["BANNERBEAR_TEMPLATE_ID"];
-    const pfp = process.env["PFP_IMAGE"];
+    try {
+        const BannerBearApi = process.env["BANNERBEAR_API"];
+        const templateId = process.env["BANNERBEAR_TEMPLATE_ID"];
+        const pfp = process.env["PFP_IMAGE"];
 
-    let data = {
-      template: templateId,
-      modifications: [
-        {
-          name: "background",
-          color: null,
-        },
-        {
-          name: "tweet_background",
-          color: null,
-        },
-        {
-          name: "avatar",
-          image_url: pfp,
-        },
-        {
-          name: "name",
-          text: name,
-          color: null,
-          background: null,
-        },
-        {
-          name: "username",
-          text: emailId,
-          color: null,
-          background: null,
-        },
-        {
-          name: "tweet",
-          text: prompt,
-          color: null,
-          background: null,
-        },
-      ],
-      webhook_url: null,
-      transparent: false,
-      metadata: null,
-    };
+        let data = {
+            template: templateId,
+            modifications: [
+                {
+                    name: "background",
+                    color: null,
+                },
+                {
+                    name: "tweet_background",
+                    color: null,
+                },
+                {
+                    name: "avatar",
+                    image_url: pfp,
+                },
+                {
+                    name: "name",
+                    text: name,
+                    color: null,
+                    background: null,
+                },
+                {
+                    name: "username",
+                    text: emailId,
+                    color: null,
+                    background: null,
+                },
+                {
+                    name: "tweet",
+                    text: prompt,
+                    color: null,
+                    background: null,
+                },
+            ],
+            webhook_url: null,
+            transparent: false,
+            metadata: null,
+        };
 
-    let imageData = await fetch("https://api.bannerbear.com/v2/images", {
-      method: "POST",
-      body: JSON.stringify(data),
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${BannerBearApi}`,
-      },
-    });
+        let imageData = await fetch("https://api.bannerbear.com/v2/images", {
+            method: "POST",
+            body: JSON.stringify(data),
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${BannerBearApi}`,
+            },
+        });
 
-    let res1 = await imageData.json();
+        let res1 = await imageData.json();
 
-    const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-    await delay(2500);
+        const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+        await delay(2500);
 
-    let img = fetch(`https://api.bannerbear.com/v2/images/${res1.uid}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${BannerBearApi}`,
-      },
-    });
+        let img = fetch(`https://api.bannerbear.com/v2/images/${res1.uid}`, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${BannerBearApi}`,
+            },
+        });
 
-    let res = await img;
-    let res2 = await res.json();
+        let res = await img;
+        let res2 = await res.json();
 
-    let url = res2.image_url_png;
-    // console.log(url);
+        let url = res2.image_url_png;
+        // console.log(url);
 
-    return url;
-  } catch (e) {
-    console.log(e);
-  }
+        return url;
+    } catch (e) {
+        console.log(e);
+    }
 }
 
-async function setTableData(emailId, tokenId) {}
-async function fetchUserNfts(address) {}
+async function formURI(url) {
+    try {
+        const uploadArray = [
+            {
+                path: "prompts.json",
+                content: {
+                    image: url,
+                },
+            },
+        ];
+
+        const response = await Moralis.EvmApi.ipfs.uploadFolder({
+            abi: uploadArray,
+        });
+
+        const uri = response.result[0].path;
+        // console.log(uri);
+
+        return uri;
+    } catch (e) {
+        console.log(e);
+    }
+}
+
+async function sendMail(emailId, imageUrl, txHash, name) {
+    try {
+        let txUrl = `https://testnet.flowscan.org/transaction/${txHash}`;
+
+        SibApiV3Sdk.ApiClient.instance.authentications["api-key"].apiKey =
+            process.env["BREVO_API_KEY"];
+
+        new SibApiV3Sdk.TransactionalEmailsApi()
+            .sendTransacEmail({
+                sender: {
+                    email: "glenxbuilders@gmail.com",
+                    name: "Solana Mint",
+                },
+                to: [{ email: emailId, name: name }],
+                params: {
+                    nft_link: imageUrl,
+                    name: "Solana Mint",
+                    txUrl: txUrl,
+                },
+                attachment: [{ url: imageUrl, name: "nft.png" }],
+                templateId: 3,
+            })
+            .then(
+                function (data) {
+                    console.log(data);
+                },
+                function (error) {
+                    console.error(error);
+                }
+            );
+    } catch (e) {
+        console.log(e);
+    }
+}
