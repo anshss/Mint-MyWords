@@ -4,17 +4,33 @@ import { sleepSeconds } from "@tatumio/shared-abstract-sdk";
 import Moralis from "moralis";
 import SibApiV3Sdk from "sib-api-v3-sdk";
 import dotenv from "dotenv";
+import fetch from "node-fetch";
 dotenv.config();
 
-const SLEEP_SECONDS = 5;
+const SLEEP_SECONDS = 2;
 const TatumApi = process.env["TATUM_API"];
+
 const solanaSDK = TatumSolanaSDK({
     apiKey: TatumApi,
 });
 const senderAddress = process.env["MINTER_ADDRESS"];
 const senderPrivateKey = process.env["MINTER_PRIVATE_KEY"];
 
+const MoralisApi = process.env["MORALIS_API"];
+
+Moralis.start({
+  apiKey: MoralisApi,
+});
+
 runMintSimulator();
+
+// testMint()
+
+// async function testMint() {
+//     const uri = "https://ipfs.moralis.io:2053/ipfs/QmfVsGoqHLYXjudaaiFnuUu7PiTDoLnXbuS5A3Vh924W2d/prompts.json"
+//     const { nftAddress, txId } = await nftMint(uri);
+//     console.log(`Minted NFT: ${nftAddress} in tx: ${txId}`);
+// }
 
 async function runMintSimulator() {
     const name = "Sarthak Vaish";
@@ -27,73 +43,82 @@ async function runMintSimulator() {
 
 async function runClaimSimulator() {
     const nftAddress = "3VXaCkTyuqqeUU9bSE2HytcVkE7xqh3RoAm3AaiiUuFh";
-    const receiverAddress = "BTBPKRJQv7mn2kxBBJUpzh3wKN567ZLdXDWcxXFQ4KaV"
-    claimSimulator(nftAddress, receiverAddress)
+    const receiverAddress = "BTBPKRJQv7mn2kxBBJUpzh3wKN567ZLdXDWcxXFQ4KaV";
+    claimSimulator(nftAddress, receiverAddress);
 }
 
 async function mintSimulator(name, emailId, prompt) {
     const imageUrl = await createImage(name, emailId, prompt);
-    console.log(imageUrl);
+    console.log("image", imageUrl);
     const uri = await formURI(imageUrl);
-    console.log(uri);
+    console.log("uri", uri);
     const { nftAddress, txId } = await nftMint(uri);
+    console.log(`Minted NFT: ${nftAddress} in tx: ${txId}`);
     // add table email, nftAddress
-    console.log(txId);
     await sendMail(emailId, imageUrl, txId, name);
 }
 
 async function claimSimulator(nftAddress, receiverAddress) {
     const imgUrl = await fetchImage(nftAddress);
-    await claim(receiverAddress, nftAddress);
+    console.log(imgUrl);
+    const txId = await claim(receiverAddress, nftAddress);
+    console.log(`Transferred NFT: ${nftAddress} in tx: ${txId}`);
 }
 
 async function nftMint(uri) {
-    const { txId, nftAddress } = await solanaSDK.nft.send.mintSignedTransaction(
-        {
-            to: senderAddress,
-            from: senderAddress,
-            fromPrivateKey: senderPrivateKey,
-            metadata: {
-                name: "Prompt_NFT",
-                symbol: "PN",
-                sellerFeeBasisPoints: 0,
-                uri: uri,
-                creators: [
-                    {
-                        address: senderAddress,
-                        share: 100, // means that creator owns 100% of NFT
-                        verified: true, // means that this creator is signed transaction
-                    },
-                ],
-            },
-        }
-    );
-    console.log(`Minted NFT: ${nftAddress} in tx: ${txId}`);
-    await sleepSeconds(SLEEP_SECONDS);
-    return nftAddress, txId;
+    try {
+        const { txId, nftAddress } =
+            await solanaSDK.nft.send.mintSignedTransaction({
+                to: senderAddress,
+                from: senderAddress,
+                fromPrivateKey: senderPrivateKey,
+                metadata: {
+                    name: "Prompt_NFT",
+                    symbol: "PN",
+                    sellerFeeBasisPoints: 0,
+                    uri: uri,
+                    creators: [
+                        {
+                            address: senderAddress,
+                            share: 100, // means that creator owns 100% of NFT
+                            verified: true, // means that this creator is signed transaction
+                        },
+                    ],
+                },
+            });
+
+        await sleepSeconds(SLEEP_SECONDS);
+        return { nftAddress, txId };
+    } catch (error) {
+        console.log(error);
+    }
 }
 
 async function fetchImage(nftAddress) {
-    const metadata = await solanaSDK.nft.getNFTMetadataURI(
-        Currency.SOL,
-        nftAddress
-    );
+    try {
+        const metadata = await solanaSDK.nft.getNFTMetadataURI(
+            Currency.SOL,
+            nftAddress
+        );
 
-    const url = `${JSON.stringify(metadata)}`;
-    console.log(url);
-    return url;
+        const url = `${JSON.stringify(metadata)}`;
+        return url;
+    } catch (error) {
+        console.log(error);
+    }
 }
 
 async function claim(receiverAddress, nftAddress) {
     try {
-        const { txId: transferTx } =
+        const { txId } =
             await solanaSDK.nft.send.transferSignedTransaction({
                 to: receiverAddress,
                 from: senderAddress,
                 fromPrivateKey: senderPrivateKey,
                 contractAddress: nftAddress,
             });
-        console.log(`Transferred NFT: ${nftAddress} in tx: ${transferTx}`);
+        await sleepSeconds(SLEEP_SECONDS);
+        return txId;
     } catch (error) {
         console.log(error);
     }
