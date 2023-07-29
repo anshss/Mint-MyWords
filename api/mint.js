@@ -5,22 +5,29 @@ import Moralis from "moralis";
 import SibApiV3Sdk from "sib-api-v3-sdk";
 import dotenv from "dotenv";
 import fetch from "node-fetch";
+import { Configuration, OpenAIApi } from 'openai'
 dotenv.config();
 
 const SLEEP_SECONDS = 2;
+
+const senderAddress = process.env["MINTER_ADDRESS"];
+const senderPrivateKey = process.env["MINTER_PRIVATE_KEY"];
 const TatumApi = process.env["TATUM_API"];
+const MoralisApi = process.env["MORALIS_API"];
+const openaiApi = process.env["OPENAI_API"];
 
 const solanaSDK = TatumSolanaSDK({
     apiKey: TatumApi,
 });
-const senderAddress = process.env["MINTER_ADDRESS"];
-const senderPrivateKey = process.env["MINTER_PRIVATE_KEY"];
-
-const MoralisApi = process.env["MORALIS_API"];
 
 Moralis.start({
   apiKey: MoralisApi,
 });
+
+const configuration = new Configuration({
+    apiKey: openaiApi,
+});
+const openai = new OpenAIApi(configuration);
 
 runMintSimulator();
 
@@ -259,4 +266,16 @@ async function sendMail(emailId, imageUrl, txHash, name) {
     } catch (e) {
         console.log(e);
     }
+}
+
+async function generateAIImage() {
+    const res = await openai.createImage({
+        prompt: inputValue,
+        n: 2,
+        size: "1024x1024",
+    })
+
+    const imgUrl = res.data.data[0].url
+    console.log(imgUrl)
+    return imgUrl
 }
