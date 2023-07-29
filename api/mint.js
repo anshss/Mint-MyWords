@@ -29,7 +29,7 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
-runMintSimulator();
+// runMintSimulator();
 
 // testMint()
 
@@ -39,35 +39,46 @@ runMintSimulator();
 //     console.log(`Minted NFT: ${nftAddress} in tx: ${txId}`);
 // }
 
-async function runMintSimulator() {
-    const name = "Sarthak Vaish";
-    const emailId = `sarthakvaish184@gmail.com`;
-    const prompt = `HI, This is a first NFT I minted. How is it?`;
-    console.time("Simulator");
-    await mintSimulator(name, emailId, prompt);
-    console.timeEnd("Simulator");
-}
+// async function runMintSimulator() {
+//     const name = "Sarthak Vaish";
+//     const emailId = `sarthakvaish184@gmail.com`;
+//     const prompt = `HI, This is a first NFT I minted. How is it?`;
+//     console.time("Simulator");
+//     await mintSimulator(name, emailId, prompt);
+//     console.timeEnd("Simulator");
+// }
 
-async function runClaimNftSimulator() {
-    const nftAddress = "3VXaCkTyuqqeUU9bSE2HytcVkE7xqh3RoAm3AaiiUuFh";
-    const receiverAddress = "BTBPKRJQv7mn2kxBBJUpzh3wKN567ZLdXDWcxXFQ4KaV";
-    claimNftSimulator(nftAddress, receiverAddress);
-}
+// async function runClaimNftSimulator() {
+//     const nftAddress = "3VXaCkTyuqqeUU9bSE2HytcVkE7xqh3RoAm3AaiiUuFh";
+//     const receiverAddress = "BTBPKRJQv7mn2kxBBJUpzh3wKN567ZLdXDWcxXFQ4KaV";
+//     claimNftSimulator(nftAddress, receiverAddress);
+// }
 
-async function mintSimulator(name, emailId, prompt) {
-    const imageUrl = await createImage(name, emailId, prompt);
-    console.log("image", imageUrl);
+async function mintThisImage(name, emailId, imageUrl) {
     const uri = await formURI(imageUrl);
     console.log("uri", uri);
     const { nftAddress, txId } = await nftMint(uri);
     console.log(`Minted NFT: ${nftAddress} in tx: ${txId}`);
     // add table email, nftAddress
-    await sendMail(emailId, imageUrl, txId, name);
+    await sendMail(emailId, imageUrl, nftAddress, name);
+    return nftAddress;
 }
 
-async function claimNftSimulator(nftAddress, receiverAddress) {
-    const imgUrl = await fetchNftImage(nftAddress);
-    console.log(imgUrl);
+export async function mintBannerSimulator(name, emailId, prompt) {
+    const imageUrl = await createImage(name, emailId, prompt);
+    console.log("image", imageUrl);
+    const nftAddress = await mintThisImage(name, emailId, imageUrl)
+    return nftAddress;
+}
+
+export async function mintAiSimulator(name, emailId, prompt) {
+    const imageUrl = await generateAIImage(prompt)
+    const nftAddress = await mintThisImage(name, emailId, imageUrl)
+    return nftAddress;
+}
+
+
+export async function claimNftSimulator(nftAddress, receiverAddress) {
     const txId = await claimNft(receiverAddress, nftAddress);
     console.log(`Transferred NFT: ${nftAddress} in tx: ${txId}`);
 }
@@ -101,18 +112,32 @@ async function nftMint(uri) {
     }
 }
 
-async function fetchNftImage(nftAddress) {
+export async function fetchNftImage(nftAddress) {
     try {
         const metadata = await solanaSDK.nft.getNFTMetadataURI(
             Currency.SOL,
             nftAddress
         );
+        
+        const imageData = await fetch(metadata?.onchainData?.uri)
+        const imageUrl = await imageData.json();
 
-        const url = `${JSON.stringify(metadata)}`;
-        return url;
+        return imageUrl.image;
     } catch (error) {
         console.log(error);
     }
+}
+
+export async function fetchAllNft(NFTs){
+    console.log("NFT", NFTs)
+    const promises = NFTs.map(async (nft) => {
+        const imageUrl = await fetchNftImage(nft.tokenId);
+        const newNftData = {...(nft.toJSON()), imageUrl}
+        return newNftData
+    })
+
+    const allNftData = await Promise.all(promises);
+    return allNftData
 }
 
 async function claimNft(receiverAddress, nftAddress) {
@@ -131,7 +156,7 @@ async function claimNft(receiverAddress, nftAddress) {
     }
 }
 
-async function createImage(name, emailId, prompt) {
+export async function createImage(name, emailId, prompt) {
     try {
         const BannerBearApi = process.env["BANNERBEAR_API"];
         const templateId = process.env["BANNERBEAR_TEMPLATE_ID"];
@@ -233,9 +258,9 @@ async function formURI(url) {
     }
 }
 
-async function sendMail(emailId, imageUrl, txHash, name) {
+async function sendMail(emailId, imageUrl, nftAddress, name) {
     try {
-        let txUrl = `https://testnet.flowscan.org/transaction/${txHash}`;
+        let txUrl = `https://explorer.solana.com/address/${nftAddress}?cluster=devnet`;
 
         SibApiV3Sdk.ApiClient.instance.authentications["api-key"].apiKey =
             process.env["BREVO_API_KEY"];
@@ -244,12 +269,12 @@ async function sendMail(emailId, imageUrl, txHash, name) {
             .sendTransacEmail({
                 sender: {
                     email: "glenxbuilders@gmail.com",
-                    name: "Solana Mint",
+                    name: "Mint My Words",
                 },
                 to: [{ email: emailId, name: name }],
                 params: {
                     nft_link: imageUrl,
-                    name: "Solana Mint",
+                    name: name,
                     txUrl: txUrl,
                 },
                 attachment: [{ url: imageUrl, name: "nft.png" }],
@@ -268,14 +293,14 @@ async function sendMail(emailId, imageUrl, txHash, name) {
     }
 }
 
-async function generateAIImage() {
+export async function generateAIImage(prompt) {
     const res = await openai.createImage({
-        prompt: inputValue,
-        n: 2,
+        prompt: prompt,
+        n: 1,
         size: "1024x1024",
     })
 
     const imgUrl = res.data.data[0].url
-    console.log(imgUrl)
+    console.log("Successfully Generated Image from DALLE.", imgUrl)
     return imgUrl
 }
