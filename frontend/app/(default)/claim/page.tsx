@@ -2,60 +2,78 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function FeaturesBlocks() {
   const [nftData, setNftData] = useState<any[]>([]);
   const { isLoaded, isSignedIn, user } = useUser();
 
-  const [address, setAddress] = useState("")
+  const [address, setAddress] = useState("");
 
   const [open, setOpen] = useState(false);
-  const [nftAddress, setNftAddres] = useState("")
+  const [nftAddress, setNftAddres] = useState("");
 
-  function setNft(address: string){
-    setNftAddres(address)
+  function setNft(address: string) {
+    setNftAddres(address);
     setOpen(true);
   }
-
 
   const handleClose = () => {
     setOpen(false);
   };
 
-  async function handelClaim(){
-    handleClose()
-    if (!user?.primaryEmailAddress?.emailAddress) return;
+  async function handelClaim() {
+    handleClose();
+    if (!user?.primaryEmailAddress?.emailAddress) {
+      toast.error("You are not logged in. Login to continue");
+      return false;
+    }
 
-    const response = await axios.patch(
-      "https://mint-my-words.onrender.com/users/" + user?.primaryEmailAddress?.emailAddress + "/nft/claimed/" + nftAddress, { receiverAddress: address}
-    );
-    console.log(response);
+    if (!address) {
+      toast.error("Enter receiver Address");
+      return false;
+    }
+    if (!nftAddress) {
+      toast.error("NFT address not found");
+      return false;
+    }
+
+    try {
+      const response = await axios.patch(
+        "https://mint-my-words.onrender.com/users/" +
+          user?.primaryEmailAddress?.emailAddress +
+          "/nft/claimed/" +
+          nftAddress,
+        { receiverAddress: address }
+      );
+      console.log(response);
+
+      toast.success("Successfullt minted NFT in your Solana Account.");
+    } catch (e: any) {
+      toast.error("Error: " + e.message);
+    }
   }
-
-
-  //   async function claimNft(tokenId, receiverAddress){
-  // localhost:3001/users/sarthakvaish184@gmail.com/nft/claimed/4u2vo45YWngQW3JjPvgJidnyDvJcvnvASmd4dTfz657j
-
-  //   }
 
   useEffect(() => {
     async function fetchData(email: string) {
       const response = await axios.get(
-        "https://mint-my-words.onrender.com/users/fetchnft/" +
-        email
+        "https://mint-my-words.onrender.com/users/fetchnft/" + email
       );
       return response.data;
     }
 
-    if (user?.primaryEmailAddress?.emailAddress){
-      fetchData(user.primaryEmailAddress?.emailAddress).then((data) => setNftData(data));
+    if (user?.primaryEmailAddress?.emailAddress) {
+      fetchData(user.primaryEmailAddress?.emailAddress).then((data) =>
+        setNftData(data)
+      );
+    } else {
+      if (isLoaded) toast.error("You are not logged in. Login to continue");
     }
   }, [user?.emailAddresses]);
 
@@ -85,29 +103,30 @@ export default function FeaturesBlocks() {
       </div>
 
       <div className="max-md">
-    
-      <Dialog fullWidth open={open} onClose={handleClose}>
-        <DialogTitle>Claim NFT</DialogTitle>
-        <DialogContent>
-       
-          <TextField
-            autoFocus
-            margin="dense"
-            id="address"
-            label="Recepient Address"
-            type="text"
-            fullWidth
-            variant="outlined"
-            value={address}
-            onChange={(e) => {setAddress(e.target.value)}}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handelClaim}>Claim</Button>
-        </DialogActions>
-      </Dialog>
-    </div>
+        <Dialog fullWidth open={open} onClose={handleClose}>
+          <DialogTitle>Claim NFT</DialogTitle>
+          <DialogContent>
+            <TextField
+              autoFocus
+              margin="dense"
+              id="address"
+              label="Recepient Address"
+              type="text"
+              fullWidth
+              variant="outlined"
+              value={address}
+              onChange={(e) => {
+                setAddress(e.target.value);
+              }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose}>Cancel</Button>
+            <Button onClick={handelClaim}>Claim</Button>
+          </DialogActions>
+        </Dialog>
+      </div>
+      <Toaster />
     </section>
   );
 }
@@ -138,54 +157,14 @@ function NftCard({ nftData, setopen }: any) {
             Already Claimed
           </div>
         ) : (
-          <button onClick={() => setopen(nftData.tokenId)} className="p-1 px-8 text-white bg-blue-600 hover:bg-blue-700 mt-2 rounded-md text-sm">
+          <button
+            onClick={() => setopen(nftData.tokenId)}
+            className="p-1 px-8 text-white bg-blue-600 hover:bg-blue-700 mt-2 rounded-md text-sm"
+          >
             Claim
           </button>
         )}
       </div>
-    </div>
-  );
-}
-
-
-function FormDialog() {
-  const [open, setOpen] = useState(false);
-
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
-  return (
-    <div>
-      <Button variant="outlined" onClick={handleClickOpen}>
-        Open form dialog
-      </Button>
-      <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Subscribe</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            To subscribe to this website, please enter your email address here. We
-            will send updates occasionally.
-          </DialogContentText>
-          <TextField
-            autoFocus
-            margin="dense"
-            id="name"
-            label="Email Address"
-            type="email"
-            fullWidth
-            variant="standard"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleClose}>Subscribe</Button>
-        </DialogActions>
-      </Dialog>
     </div>
   );
 }
