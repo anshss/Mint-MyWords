@@ -10,5 +10,5 @@ mintAiSimulator() - mints AI images <br/>
 claimNftSimulator() - claims NFT to user wallet <br/>
 fetchNftImage() - fetches all user-minted NFTs <br/>
 
-Pitch deck: https://tome.app/meow-b1b/mint-mywords-clkokahzo03fkn05qbso0yetu
-Video demo: https://youtu.be/K3XUWz05Yn0
+Pitch deck: https://tome.app/meow-b1b/mint-mywords-clkokahzo03fkn05qbso0yetu <br/>
+Video demo: https://youtu.be/K3XUWz05Yn0 <br/>
