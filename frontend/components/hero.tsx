@@ -1,5 +1,6 @@
 import VideoThumb from "@/public/images/hero-image.png";
 import ModalVideo from "@/components/modal-video";
+import Link from "next/link";
 
 {
   /* <h1 class="text-gray-900  font-bold text-5xl md:text-6xl xl:text-7xl">
@@ -88,12 +89,12 @@ export default function Hero() {
                   </a>
                 </div>
                 <div>
-                  <a
+                  <Link
                     className="btn text-white bg-gray-900 hover:bg-gray-800 w-full sm:w-auto sm:ml-4"
-                    href="#0"
+                    href="/claim"
                   >
-                    Youtube Demo
-                  </a>
+                    Claim Page
+                  </Link>
                 </div>
               </div>
             </div>
