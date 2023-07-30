@@ -66,6 +66,21 @@
         {
           "slots": [
             {
+              "name": "type",
+              "elicitationRequired": true,
+              "validations": [
+                {
+                  "type": "hasEntityResolutionMatch",
+                  "prompt": "Slot.Validation.896172743039.1537881298253.1076453082361"
+                }
+              ],
+              "type": "type",
+              "confirmationRequired": false,
+              "prompts": {
+                "elicitation": "Elicit.Slot.945131949720.490446328260"
+              }
+            },
+            {
               "name": "mintText",
               "elicitationRequired": true,
               "type": "AMAZON.SearchQuery",
@@ -187,6 +202,15 @@
         {
           "slots": [
             {
+              "name": "type",
+              "type": "type",
+              "samples": [
+                "{type} image",
+                "We can try {type}",
+                "{type}"
+              ]
+            },
+            {
               "name": "mintText",
               "type": "AMAZON.SearchQuery",
               "samples": [
@@ -204,7 +228,40 @@
           ]
         }
       ],
-      "types": [],
+      "types": [
+        {
+          "values": [
+            {
+              "name": {
+                "synonyms": [
+                  "tweet",
+                  "Tweet image",
+                  "Tweet image",
+                  "Tweet like",
+                  "my words",
+                  "exact words"
+                ],
+                "value": "tweet like"
+              },
+              "id": "tweet"
+            },
+            {
+              "name": {
+                "synonyms": [
+                  "art",
+                  "Ai Art",
+                  "Open Ai ",
+                  "Dalle",
+                  "Artificial Intelligence"
+                ],
+                "value": "AI"
+              },
+              "id": "ai"
+            }
+          ],
+          "name": "type"
+        }
+      ],
       "invocationName": "mint my words"
     },
     "prompts": [
@@ -305,10 +362,32 @@
         "variations": [
           {
             "type": "SSML",
-            "value": "\u003cspeak\u003eI am goint to mind your words- {mintText} . Is that correct?\u003c/speak\u003e"
+            "value": "\u003cspeak\u003eGoint to mind your words- {mintText} . Is that correct?\u003c/speak\u003e"
           }
         ],
         "id": "Confirm.Intent.1651202650187"
+      },
+      {
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "Okay. What kind of image you want to create, AI image, or image of your words?"
+          },
+          {
+            "type": "PlainText",
+            "value": "What type of Image you want to mint. You can Mint a AI image or tweet-like image of your words?"
+          }
+        ],
+        "id": "Elicit.Slot.945131949720.490446328260"
+      },
+      {
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "Please select one of AI images or tweet-like images"
+          }
+        ],
+        "id": "Slot.Validation.896172743039.1537881298253.1076453082361"
       }
     ]
   }

@@ -24,7 +24,9 @@ const ics = require('ics');
 const { google } = require('googleapis');
 const sgMail = require('@sendgrid/mail');
 const fetch =  require("node-fetch");
+const axios = require("axios");
 require('dotenv').config();
+const BASE_URL = "https://mint-my-words.onrender.com/users/";
 
 /* CONSTANTS */
 // To set constants, change the value in .env.sample then
@@ -341,9 +343,12 @@ const CompletedMintingIntentHandler = {
     
     
     
-    const mintText = currentIntent.slots.mintText
+    const mintText = currentIntent.slots.mintText.value;
+    const nftType = currentIntent.slots.type.value;
+    
     const profileName = await upsServiceClient.getProfileName();
     const profileEmail = await upsServiceClient.getProfileEmail();
+    
     
     
     try {
@@ -352,80 +357,20 @@ const CompletedMintingIntentHandler = {
         console.log("Progressive response directive error : " + error);
     }
     
-    await sendEmail(profileName, profileEmail, mintText.value);
+    // await sendEmail(profileName, profileEmail, mintText.value);
     
-    const speakOutput = "Done! You will receive NFT on your mail within a minute."
+    if (nftType === "AI"){
+         await mintNFTSimulator(profileName, profileEmail, mintText, "ai");
+    } else {
+         await mintNFTSimulator(profileName, profileEmail, mintText, "banner");
+    }
+    
+    const speakOutput = "Done! You will receive the NFT on your mail within a minute." 
   
     return handlerInput.responseBuilder
     .speak(speakOutput)
     // .reprompt(speakReprompt)
     .getResponse();
-  },
-};
-
-// This handler is used to handle cases when a user asks if an
-// appointment time is available
-const CheckAvailabilityIntentHandler = {
-  canHandle(handlerInput) {
-    return handlerInput.requestEnvelope.request.type === 'IntentRequest'
-      && handlerInput.requestEnvelope.request.intent.name === 'CheckAvailabilityIntent';
-  },
-  async handle(handlerInput) {
-    const {
-      responseBuilder,
-      attributesManager,
-    } = handlerInput;
-
-    const currentIntent = handlerInput.requestEnvelope.request.intent;
-    const requestAttributes = handlerInput.attributesManager.getRequestAttributes();
-    const upsServiceClient = handlerInput.serviceClientFactory.getUpsServiceClient();
-
-    // get timezone
-    const { deviceId } = handlerInput.requestEnvelope.context.System.device;
-    const userTimezone = await upsServiceClient.getSystemTimeZone(deviceId);
-
-    // get slots
-    const appointmentDate = currentIntent.slots.appointmentDate;
-    const appointmentTime = currentIntent.slots.appointmentTime;
-
-    // format appointment date and time
-    const dateLocal = luxon.DateTime.fromISO(appointmentDate.value, { zone: userTimezone });
-    const timeLocal = luxon.DateTime.fromISO(appointmentTime.value, { zone: userTimezone });
-    const dateTimeLocal = dateLocal.plus({ 'hours': timeLocal.hour, 'minute': timeLocal.minute || 0 });
-    const speakDateTimeLocal = dateTimeLocal.toLocaleString(luxon.DateTime.DATETIME_HUGE);
-
-    // set appontement date to utc and add 30 min for end time
-    const startTimeUtc = dateTimeLocal.toUTC().toISO();
-    const endTimeUtc = dateTimeLocal.plus({ minutes: 30 }).toUTC().toISO();
-
-    // check to see if the appointment date and time is available
-    const isTimeSlotAvailable = await checkAvailability(startTimeUtc, endTimeUtc, userTimezone);
-
-    let speakOutput = requestAttributes.t('TIME_NOT_AVAILABLE', speakDateTimeLocal);
-    let speekReprompt = requestAttributes.t('TIME_NOT_AVAILABLE_REPROMPT', speakDateTimeLocal);
-
-    if (isTimeSlotAvailable) {
-      // save booking time to session to be used for booking
-      const sessionAttributes = {
-        appointmentDate,
-        appointmentTime,
-      };
-
-      attributesManager.setSessionAttributes(sessionAttributes);
-
-      speakOutput = requestAttributes.t('TIME_AVAILABLE', speakDateTimeLocal);
-      speekReprompt = requestAttributes.t('TIME_AVAILABLE_REPROMPT', speakDateTimeLocal);
-
-      return responseBuilder
-        .speak(speakOutput)
-        .reprompt(speekReprompt)
-        .getResponse();
-    }
-
-    return responseBuilder
-      .speak(speakOutput)
-      .reprompt(speekReprompt)
-      .getResponse();
   },
 };
 
@@ -686,6 +631,73 @@ async function sendEmail(name, email, prompt){
     })
 }
 
+async function mintNFTSimulator(name, email, prompt, type) {
+  try {
+    const user = await checkUserExistence(name, email);
+    console.log("user", user)
+    if (type === "ai"){
+      const nft = await mintAINft(email, prompt);
+      console.log("minted ai nft", nft);
+    }
+    else{
+      const nft = await mintBannerNFT(email, prompt);
+      console.log("minted banner nft", nft);
+    }
+  } catch (error) {
+    throw error;
+  }
+}
+
+
+async function checkUserExistence(name, email) {
+  try {
+    const response = await axios.get(BASE_URL + email);
+    return response.data;
+  } catch (error) {
+    if (error.response && error.response.status === 404) {
+      return createUser(name, email);
+    } else {
+      throw error;
+    }
+  }
+}
+async function createUser(name, email) {
+  try {
+    let obj = {
+      name,
+      email,
+    };
+    const response = await axios.post(BASE_URL + "create", obj);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
+async function mintAINft(email, prompt) {
+  try {
+    let obj = {
+      prompt,
+    };
+
+    const response = await axios.post(BASE_URL + email + "/create/ai", obj);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
+async function mintBannerNFT(email, prompt) {
+  try {
+    let obj = {
+      prompt,
+    };
+
+    const response = await axios.post(BASE_URL + email + "/create/banner", obj);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+}
+
 function checkAvailability(startTime, endTime, timezone) {
   const {
     CLIENT_ID,
@@ -857,7 +869,6 @@ exports.handler = Alexa.SkillBuilders.custom()
     InvalidConfigHandler,
     InvalidPermissionsHandler,
     LaunchRequestHandler,
-    CheckAvailabilityIntentHandler,
     StartedInProgressScheduleAppointmentIntentHandler,
     StartedInProgressMintingIntentHandler,
     CompletedScheduleAppointmentIntentHandler,

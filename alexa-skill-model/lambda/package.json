@@ -19,7 +19,8 @@
     "i18next-sprintf-postprocessor": "^0.2.2",
     "ics": "^2.22.1",
     "luxon": "^1.24.1",
-    "googleapis": "^52.1.0"
+    "googleapis": "^52.1.0",
+     "axios": "^1.4.0"
   },
   "devDependencies": {
     "eslint": "^7.3.1",

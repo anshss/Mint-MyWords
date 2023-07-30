@@ -3,8 +3,8 @@ module.exports = {
   translation: {
     SKILL_NAME: 'Mint My words',
     GREETING: [
-      'Hello. Welcome to %s. Here you can mint a NFT of your words on Flow blockchain. Would you like to try?',
-      'Hi. Welcome to %s. Would you like to mint a NFT of your words on Flow blockchain?',
+      'Hello! Welcome to %s, Here you can turn your words into AI-generated art or create an image of your exact words. After the process is complete, I will mint an NFT of this image on the Solana blockchain and send it to you. Would you like to give it a try?',
+      'Hi. Welcome to %s. Would you like to mint a NFT of your words on Sonala blockchain?',
     ],
     GREETING_REPROMPT: [
       'Would you like to mint your words as a NFT?',

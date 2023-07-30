@@ -8,11 +8,20 @@
             "Alexa launch Appointment Scheduler",
             "Alexa start Appointment Scheduler"
           ],
+          "keywords": [],
           "name": "Mint my voice",
           "smallIconUri": "file://assets/images/en-IN_smallIconUri.png",
           "largeIconUri": "file://assets/images/en-IN_largeIconUri.png"
         }
-      }
+      },
+      "automaticDistribution": {
+        "sourceLocaleForLanguages": [],
+        "isActive": false
+      },
+      "isAvailableWorldwide": true,
+      "testingInstructions": "{\"ask_dist_username\":\"\",\"ask_dist_password\":\"\",\"ask_dist_testing_instructions\":\"\"}",
+      "distributionMode": "PUBLIC",
+      "distributionCountries": []
     },
     "apis": {
       "custom": {
@@ -48,6 +57,20 @@
       {
         "name": "alexa::profile:email:read"
       }
-    ]
+    ],
+    "privacyAndCompliance": {
+      "allowsPurchases": false,
+      "locales": {
+        "en-IN": {}
+      },
+      "containsAds": false,
+      "isExportCompliant": true,
+      "isChildDirected": false,
+      "shoppingKit": {
+        "isShoppingActionsEnabled": false,
+        "isAmazonAssociatesOnAlexaEnabled": false
+      },
+      "usesPersonalInfo": true
+    }
   }
 }
