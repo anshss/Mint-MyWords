@@ -42,9 +42,9 @@ export default function ModalVideo({
               height={thumbHeight}
               src="https://www.youtube.com/embed/K3XUWz05Yn0"
               title="YouTube video player"
-              frameborder="0"
+              frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowfullscreen
+              allowFullScreen
             ></iframe>
           </div>
         </div>
