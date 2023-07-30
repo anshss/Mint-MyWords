@@ -15,6 +15,7 @@ export default function FeaturesBlocks() {
   const { isLoaded, isSignedIn, user } = useUser();
   const [imagetype, setAge] = React.useState<string>("");
   const [imagePrompt, setimagePrompt] = React.useState<string>("");
+  const [loading, setLoading] = React.useState(false)
   const handleChange = (event: SelectChangeEvent<typeof imagetype>) => {
     setAge(event.target.value);
   };
@@ -38,16 +39,17 @@ export default function FeaturesBlocks() {
         return false
     }
 
-    
-
     const profileName = user.fullName
     const profileEmail = user?.primaryEmailAddress?.emailAddress
 
-
     try {
+      setLoading(true)
+      
       await mintNFTSimulator(profileName, profileEmail, imagePrompt, imagetype);
+      setLoading(false)
       toast.success("success! You will receive NFT on yoru mail within a minute");
     } catch (error: any) {
+        setLoading(false)
         toast.error("Error: "+ error.message);
         console.log(error);
     }
@@ -167,8 +169,9 @@ export default function FeaturesBlocks() {
             />
             <div className="mt-8 w-full flex justify-center items-center">
               <button
-                  onClick={mintNft}
-                className="py-4 px-10 mx-auto text-white bg-blue-600 hover:bg-blue-700  rounded-md text-sm"
+                onClick={mintNft}
+                disabled={loading}
+                className="py-4 px-10 mx-auto text-white bg-blue-600 hover:bg-blue-700  rounded-md text-sm disabled:opacity-60"
               >
                 Mint NFT
               </button>

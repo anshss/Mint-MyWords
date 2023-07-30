@@ -142,7 +142,10 @@ function NftCard({ nftData, setopen }: any) {
   console.log(nftData);
   return (
     <div className="relative flex flex-col items-center p-6 bg-white rounded shadow-xl">
-      <img src={imageUrl} className="w-full aspect-square " />
+      <img src={imageUrl} className="w-full aspect-square " onError={({ currentTarget }) => {
+    currentTarget.onerror = null; // prevents looping
+    currentTarget.src="https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg?20200913095930";
+  }}/>
       {/* <h4 className="text-xl font-bold leading-snug tracking-tight mb-1 mt-3">
         Your NFT
       </h4> */}
