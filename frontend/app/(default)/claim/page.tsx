@@ -87,9 +87,7 @@ export default function FeaturesBlocks() {
           <div className="max-w-3xl mx-auto text-center pb-12 md:pb-20">
             <h2 className="h2 mb-4">Claim Your NFTs</h2>
             <p className="text-xl text-gray-600">
-              Sign in with your Solana wallets to prove ownership of the
-              address, then you can claim these claimable NFTs by hitting the
-              claim button.
+              See all the NFTs minted by you below. You can claim these by hitting the claim button and entering your wallet address.
             </p>
           </div>
 

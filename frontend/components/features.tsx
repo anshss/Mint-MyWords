@@ -33,9 +33,9 @@ export default function Features() {
 
           {/* Section header */}
           <div className="max-w-3xl mx-auto text-center pb-12 md:pb-16">
-            <h1 className="h2 mb-4">Explore this works?</h1>
+            <h1 className="h2 mb-4">How this works?</h1>
             <p className="text-xl text-gray-600">
-Create AI Art & Tweet-like NFTs directly from Alexa. Additionally, Claim NFTs to your Solana Wallet from our website!</p>
+            Start the Alexa skill by saying “Hey Alexa, Mint my words”. Additionally, Claim these NFTs to your Solana Wallet from our website!</p>
           </div>
 
           {/* Section content */}
@@ -70,7 +70,7 @@ Create AI Art & Tweet-like NFTs directly from Alexa. Additionally, Claim NFTs to
                   onClick={(e) => { e.preventDefault(); setTab(2); }}
                 >
                   <div>
-                    <div className="font-bold leading-snug tracking-tight mb-1">Check your mail</div>
+                    <div className="font-bold leading-snug tracking-tight mb-1">Check your mailbox</div>
                     <div className="text-gray-600">We Will mint the NFT to your Gmail account linked with Alexa. You can  go to claim from from there.</div>
                   </div>
                   <div className="flex justify-center items-center w-8 h-8 bg-white rounded-full shadow flex-shrink-0 ml-3">
@@ -85,7 +85,7 @@ Create AI Art & Tweet-like NFTs directly from Alexa. Additionally, Claim NFTs to
                   onClick={(e) => { e.preventDefault(); setTab(3); }}
                 >
                   <div>
-                    <div className="font-bold leading-snug tracking-tight mb-1">Claim NFT</div>
+                    <div className="font-bold leading-snug tracking-tight mb-1">Claim NFTs to your wallet</div>
                     <div className="text-gray-600">Get Your NFT Now! Easy Claim Process - Click, Enter Wallet Address, and Receive Directly.</div>
                   </div>
                   <div className="flex justify-center items-center w-8 h-8 bg-white rounded-full shadow flex-shrink-0 ml-3">
